@@ -10,7 +10,7 @@ export default function Nav() {
   const pathname = usePathname();
   const { user, signOut } = useUser();
   const isActive = (href: string) =>
-    pathname === href || (href === "/" && pathname.startsWith("/juegos"));
+    pathname === href || (href === "/games" && pathname.startsWith("/games"));
 
   return (
     <>
@@ -23,6 +23,9 @@ export default function Nav() {
         </Link>
         <div className="links">
           <Link href="/" className={isActive("/") ? "active" : ""}>
+            Inicio
+          </Link>
+          <Link href="/games" className={isActive("/games") ? "active" : ""}>
             Biblioteca
           </Link>
           <Link href="/salon" className={isActive("/salon") ? "active" : ""}>
@@ -64,6 +67,13 @@ export default function Nav() {
         <Link
           href="/"
           className={isActive("/") ? "active" : ""}
+          onClick={() => setOpen(false)}
+        >
+          Inicio
+        </Link>
+        <Link
+          href="/games"
+          className={isActive("/games") ? "active" : ""}
           onClick={() => setOpen(false)}
         >
           Biblioteca
