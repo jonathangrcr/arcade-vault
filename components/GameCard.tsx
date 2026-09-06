@@ -22,7 +22,7 @@ export default function GameCard({ game }: { game: Game }) {
   };
 
   return (
-    <Link href={`/juegos/${game.id}`} className="card" ref={tiltRef} onMouseMove={onMove} onMouseLeave={onLeave}>
+    <Link href={`/games/${game.id}`} className="card" ref={tiltRef} onMouseMove={onMove} onMouseLeave={onLeave}>
       <div className="cover">
         <div className={"cover-bg " + game.cover} />
         <div className="label">{game.cat}</div>
