@@ -17,6 +17,9 @@ An online platform to play games and compete for the highest score (see README.m
 
 There is no test runner configured yet.
 
+# Skills
+Use always `/frontend-design` skill to design UI.
+
 ## Architecture
 
 - **App Router** under `app/` (`app/layout.tsx`, `app/page.tsx`). Path alias `@/*` maps to the repo root (`tsconfig.json`).
