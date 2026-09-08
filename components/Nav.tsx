@@ -31,6 +31,9 @@ export default function Nav() {
           <Link href="/salon" className={isActive("/salon") ? "active" : ""}>
             Salón de la Fama
           </Link>
+          <Link href="/about" className={isActive("/about") ? "active" : ""}>
+            Acerca de
+          </Link>
         </div>
         <div className="spacer" />
         <div className="coin-counter">
@@ -84,6 +87,13 @@ export default function Nav() {
           onClick={() => setOpen(false)}
         >
           Salón de la Fama
+        </Link>
+        <Link
+          href="/about"
+          className={isActive("/about") ? "active" : ""}
+          onClick={() => setOpen(false)}
+        >
+          Acerca de
         </Link>
         <Link
           href="/auth"
