@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { GAMES } from "@/lib/games";
-import { saveScore, useUser } from "@/lib/useUser";
+import { useUser } from "@/lib/useUser";
+import { insertScore } from "@/lib/supabase/scores";
 import AsteroidsGame, {
   type AsteroidsGameHandle,
 } from "@/components/games/AsteroidsGame";
@@ -29,6 +30,8 @@ export default function GamePlayerPage({
   const [over, setOver] = useState(false);
   const [customName, setCustomName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const level = isAsteroids ? asteroidsLevel : Math.floor(score / 2500) + 1;
   const name = customName ?? user?.name ?? "INVITADO";
@@ -53,7 +56,21 @@ export default function GamePlayerPage({
     setPaused(false);
     setOver(false);
     setSaved(false);
+    setSaveError(null);
     asteroidsRef.current?.restart();
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await insertScore({ gameId: game.id, playerName: name, score });
+      setSaved(true);
+    } catch {
+      setSaveError("NO SE PUDO GUARDAR. INTENTA DE NUEVO.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -157,16 +174,23 @@ export default function GamePlayerPage({
                     setCustomName(e.target.value.toUpperCase().slice(0, 10))
                   }
                   placeholder="TUS INICIALES"
+                  disabled={saving}
                 />
                 <button
                   className="btn yellow"
-                  onClick={() => {
-                    saveScore({ game: game.id, score, name });
-                    setSaved(true);
-                  }}
+                  onClick={handleSave}
+                  disabled={saving}
                 >
-                  GUARDAR PUNTUACIÓN
+                  {saving ? "GUARDANDO..." : "GUARDAR PUNTUACIÓN"}
                 </button>
+                {saveError && (
+                  <div
+                    className="toast-error"
+                    style={{ color: "var(--magenta)" }}
+                  >
+                    {saveError}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
