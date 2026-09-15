@@ -1,11 +1,14 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { GAMES } from "@/lib/games";
 import { saveScore, useUser } from "@/lib/useUser";
+import AsteroidsGame, {
+  type AsteroidsGameHandle,
+} from "@/components/games/AsteroidsGame";
 
 export default function GamePlayerPage({
   params,
@@ -14,33 +17,43 @@ export default function GamePlayerPage({
 }) {
   const { id } = use(params);
   const game = GAMES.find((g) => g.id === id);
+  const isAsteroids = game?.id === "asteroides";
   const router = useRouter();
   const { user } = useUser();
+  const asteroidsRef = useRef<AsteroidsGameHandle>(null);
 
   const [score, setScore] = useState(0);
-  const [lives] = useState(3);
+  const [lives, setLives] = useState(3);
+  const [asteroidsLevel, setAsteroidsLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [customName, setCustomName] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  const level = Math.floor(score / 2500) + 1;
+  const level = isAsteroids ? asteroidsLevel : Math.floor(score / 2500) + 1;
   const name = customName ?? user?.name ?? "INVITADO";
 
   useEffect(() => {
-    if (over || paused) return;
-    const t = setInterval(() => setScore((s) => s + Math.floor(10 + Math.random() * 90)), 220);
+    if (isAsteroids || over || paused) return;
+    const t = setInterval(
+      () => setScore((s) => s + Math.floor(10 + Math.random() * 90)),
+      220,
+    );
     return () => clearInterval(t);
-  }, [over, paused]);
+  }, [isAsteroids, over, paused]);
 
   if (!game) notFound();
 
-  const endGame = () => setOver(true);
+  const endGame = () => {
+    setOver(true);
+    if (isAsteroids) setPaused(true);
+  };
   const restart = () => {
     setScore(0);
     setPaused(false);
     setOver(false);
     setSaved(false);
+    asteroidsRef.current?.restart();
   };
 
   return (
@@ -81,20 +94,42 @@ export default function GamePlayerPage({
 
       <div className="crt">
         <div className="crt-screen">
-          <div className="game-arena">
-            <div className="grid-floor" />
-            <div className="enemy e1" />
-            <div className="enemy e2" />
-            <div className="enemy e3" />
-            <div className="player-ship" />
-          </div>
+          {isAsteroids ? (
+            <AsteroidsGame
+              ref={asteroidsRef}
+              paused={paused}
+              onScoreChange={setScore}
+              onLivesChange={setLives}
+              onLevelChange={setAsteroidsLevel}
+              onGameOver={() => setOver(true)}
+            />
+          ) : (
+            <div className="game-arena">
+              <div className="grid-floor" />
+              <div className="enemy e1" />
+              <div className="enemy e2" />
+              <div className="enemy e3" />
+              <div className="player-ship" />
+            </div>
+          )}
           {paused && (
-            <div className="crt-content" style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}>
+            <div
+              className="crt-content"
+              style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}
+            >
               <div>
                 <div className="pixel neon-yellow" style={{ fontSize: 22 }}>
                   EN PAUSA
                 </div>
-                <div className="mono" style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 10, letterSpacing: "0.16em" }}>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ink-dim)",
+                    marginTop: 10,
+                    letterSpacing: "0.16em",
+                  }}
+                >
                   PULSA REANUDAR PARA CONTINUAR
                 </div>
               </div>
@@ -103,9 +138,7 @@ export default function GamePlayerPage({
         </div>
         <div className="crt-bottom">
           <span className="led">SEÑAL OK</span>
-          <span>
-            {game.title} · CRT-83 · 60 HZ
-          </span>
+          <span>{game.title} · CRT-83 · 60 HZ</span>
           <span>CARGA · 1MB</span>
         </div>
       </div>
@@ -120,7 +153,9 @@ export default function GamePlayerPage({
               <div className="input-row">
                 <input
                   value={name}
-                  onChange={(e) => setCustomName(e.target.value.toUpperCase().slice(0, 10))}
+                  onChange={(e) =>
+                    setCustomName(e.target.value.toUpperCase().slice(0, 10))
+                  }
                   placeholder="TUS INICIALES"
                 />
                 <button
@@ -140,7 +175,10 @@ export default function GamePlayerPage({
               <button className="btn" onClick={restart}>
                 JUGAR DE NUEVO
               </button>
-              <button className="btn magenta" onClick={() => router.push("/games")}>
+              <button
+                className="btn magenta"
+                onClick={() => router.push("/games")}
+              >
                 VOLVER AL VAULT
               </button>
             </div>
