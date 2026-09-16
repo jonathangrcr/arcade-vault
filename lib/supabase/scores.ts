@@ -7,6 +7,12 @@ export type ScoreRow = {
   date: string; // DD/MM/YYYY
 };
 
+type LeaderboardRpcRow = {
+  player_name: string;
+  score: number;
+  created_at: string;
+};
+
 function formatDate(iso: string): string {
   const d = new Date(iso);
   const day = String(d.getDate()).padStart(2, "0");
@@ -26,7 +32,7 @@ export async function getLeaderboard(
 
   if (error) throw error;
 
-  return (data ?? []).map((row, i) => ({
+  return (data ?? []).map((row: LeaderboardRpcRow, i: number) => ({
     rank: i + 1,
     name: row.player_name,
     score: row.score,
@@ -46,7 +52,7 @@ export async function getPlayerBest(
 
   if (error) throw error;
 
-  const rows = data ?? [];
+  const rows: LeaderboardRpcRow[] = data ?? [];
   const idx = rows.findIndex((row) => row.player_name === playerName);
   if (idx === -1) return null;
 
