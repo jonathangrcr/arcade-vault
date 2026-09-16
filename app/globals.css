@@ -449,6 +449,32 @@ a { color: inherit; text-decoration: none; }
   filter: drop-shadow(0 0 6px rgba(0,255,136,0.6));
 }
 
+.cover-snake-2 { background:
+  repeating-linear-gradient(0deg, rgba(0,255,136,0.06) 0 14px, transparent 14px 28px),
+  repeating-linear-gradient(90deg, rgba(0,255,136,0.06) 0 14px, transparent 14px 28px),
+  #061511; }
+.cover-snake-2::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(var(--green), var(--green)) 22% 30%/14px 14px no-repeat,
+    linear-gradient(var(--green), var(--green)) 22% 44%/14px 14px no-repeat,
+    linear-gradient(var(--green), var(--green)) 22% 58%/14px 14px no-repeat,
+    linear-gradient(var(--green), var(--green)) 36% 58%/14px 14px no-repeat,
+    linear-gradient(var(--green), var(--green)) 50% 58%/14px 14px no-repeat,
+    linear-gradient(var(--green), var(--green)) 50% 44%/14px 14px no-repeat;
+  filter: drop-shadow(0 0 8px rgba(0,255,136,0.75));
+}
+.cover-snake-2::before {
+  content: "";
+  position: absolute;
+  left: 64%; top: 30%;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 10px 2px rgba(245,255,0,0.8);
+}
+
 .cover-glot { background: radial-gradient(circle at 50% 50%, #1a002a, #0a0a18); }
 .cover-glot::after {
   content: "";
