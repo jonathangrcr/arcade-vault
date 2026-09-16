@@ -7,3 +7,4 @@ Games with a real, playable engine wired into `app/games/[id]/play/page.tsx`'s `
 | `asteroides` | ASTEROIDES | SHOOTER | `components/games/AsteroidsGame.tsx` | `specs/04-asteroids-game.md` |
 | `tetris` | TETRIS | PUZZLE | `components/games/TetrisGame.tsx` | `specs/06-tetris-game.md` |
 | `arkanoid` | ARKANOID | ARCADE | `components/games/ArkanoidGame.tsx` | `specs/07-arkanoid-game.md` |
+| `snake` | SNAKE | ARCADE | `components/games/SnakeGame.tsx` | `specs/08-snake-game.md` |
