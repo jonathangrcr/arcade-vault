@@ -1,4 +1,5 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
@@ -18,13 +19,19 @@ An online platform to play games and compete for the highest score (see README.m
 There is no test runner configured yet.
 
 # Skills
+
 Use always `/frontend-design` skill to design UI.
+
+Use the `add-game` skill (`.claude/skills/add-game/`) to scaffold a new playable game end-to-end (catalog entry, cover art, ported engine component, play-page wiring, Supabase seed migration) via the spec-driven workflow — never add a game by hand.
 
 ## Architecture
 
-- **App Router** under `app/` (`app/layout.tsx`, `app/page.tsx`). Path alias `@/*` maps to the repo root (`tsconfig.json`).
-- Styling via Tailwind CSS v4 (`@tailwindcss/postcss`), global styles in `app/globals.css`.
-- Currently just the `create-next-app` scaffold — no custom routes, components, or data layer exist yet.
+- **App Router** under `app/`: `app/page.tsx` (home), `app/games/page.tsx` (catalog), `app/games/[id]/page.tsx` (game detail + `leaderboard-preview.tsx`), `app/games/[id]/play/page.tsx` (play page — per-`id` registry wiring real game components), `app/salon/page.tsx` (global leaderboard), `app/auth/page.tsx`, `app/about/page.tsx`, and API routes under `app/api/` (`contact`, `supabase-health`). Path alias `@/*` maps to the repo root (`tsconfig.json`).
+- Styling via Tailwind CSS v4 (`@tailwindcss/postcss`), global styles in `app/globals.css` (includes per-game `.cover-<slug>` art rules).
+- **Games catalog**: `lib/games.ts` defines the `Game` type and `GAMES` registry (id, title, category, cover, color, best/plays placeholders).
+- **Game engines**: `components/games/` — one `<PascalName>Game.tsx` client component per game (See implemented games: references\implemented-games.md), each a ported game loop scoped inside a `useEffect`, exposing `restart()` via `forwardRef`/`useImperativeHandle`.
+- **Supabase integration**: `lib/supabase/client.ts` and `server.ts` for client/server instances, `lib/supabase/scores.ts` for game-agnostic `getLeaderboard`/`getPlayerBest`/`insertScore` (keyed by `gameId`). The `games` table is a thin FK anchor seeded per-game via migration; the `scores` table stores leaderboard entries with RLS.
+- `lib/useUser.ts` — auth/session hook.
 
 ## Spec Driven Design
 

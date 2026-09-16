@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState, forwardRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
@@ -10,6 +10,75 @@ import { insertScore } from "@/lib/supabase/scores";
 import AsteroidsGame, {
   type AsteroidsGameHandle,
 } from "@/components/games/AsteroidsGame";
+import TetrisGame, {
+  type TetrisGameHandle,
+} from "@/components/games/TetrisGame";
+import ArkanoidGame, {
+  type ArkanoidGameHandle,
+} from "@/components/games/ArkanoidGame";
+
+type GameHandle = { restart: () => void };
+
+type GameComponentProps = {
+  paused: boolean;
+  onScoreChange: (score: number) => void;
+  onLevelChange: (level: number) => void;
+  onLivesChange: (lives: number) => void;
+  onGameOver: (finalScore: number) => void;
+};
+
+const AsteroidsEntry = forwardRef<GameHandle, GameComponentProps>(
+  function AsteroidsEntry(props, ref) {
+    return (
+      <AsteroidsGame
+        ref={ref as React.Ref<AsteroidsGameHandle>}
+        paused={props.paused}
+        onScoreChange={props.onScoreChange}
+        onLivesChange={props.onLivesChange}
+        onLevelChange={props.onLevelChange}
+        onGameOver={props.onGameOver}
+      />
+    );
+  },
+);
+
+const TetrisEntry = forwardRef<GameHandle, GameComponentProps>(
+  function TetrisEntry(props, ref) {
+    return (
+      <TetrisGame
+        ref={ref as React.Ref<TetrisGameHandle>}
+        paused={props.paused}
+        onScoreChange={props.onScoreChange}
+        onLevelChange={props.onLevelChange}
+        onGameOver={props.onGameOver}
+      />
+    );
+  },
+);
+
+const ArkanoidEntry = forwardRef<GameHandle, GameComponentProps>(
+  function ArkanoidEntry(props, ref) {
+    return (
+      <ArkanoidGame
+        ref={ref as React.Ref<ArkanoidGameHandle>}
+        paused={props.paused}
+        onScoreChange={props.onScoreChange}
+        onLivesChange={props.onLivesChange}
+        onLevelChange={props.onLevelChange}
+        onGameOver={props.onGameOver}
+      />
+    );
+  },
+);
+
+const GAME_COMPONENTS: Record<
+  string,
+  { Component: typeof AsteroidsEntry; fixedLives?: number }
+> = {
+  asteroides: { Component: AsteroidsEntry },
+  tetris: { Component: TetrisEntry, fixedLives: 1 },
+  arkanoid: { Component: ArkanoidEntry },
+};
 
 export default function GamePlayerPage({
   params,
@@ -18,14 +87,14 @@ export default function GamePlayerPage({
 }) {
   const { id } = use(params);
   const game = GAMES.find((g) => g.id === id);
-  const isAsteroids = game?.id === "asteroides";
+  const entry = game ? GAME_COMPONENTS[game.id] : undefined;
   const router = useRouter();
   const { user } = useUser();
-  const asteroidsRef = useRef<AsteroidsGameHandle>(null);
+  const gameRef = useRef<GameHandle>(null);
 
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [asteroidsLevel, setAsteroidsLevel] = useState(1);
+  const [livesState, setLivesState] = useState(3);
+  const [level, setLevel] = useState(1);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
   const [customName, setCustomName] = useState<string | null>(null);
@@ -33,31 +102,34 @@ export default function GamePlayerPage({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const level = isAsteroids ? asteroidsLevel : Math.floor(score / 2500) + 1;
+  const lives = entry?.fixedLives ?? livesState;
+  const displayLevel = entry ? level : Math.floor(score / 2500) + 1;
   const name = customName ?? user?.name ?? "INVITADO";
 
   useEffect(() => {
-    if (isAsteroids || over || paused) return;
+    if (entry || over || paused) return;
     const t = setInterval(
       () => setScore((s) => s + Math.floor(10 + Math.random() * 90)),
       220,
     );
     return () => clearInterval(t);
-  }, [isAsteroids, over, paused]);
+  }, [entry, over, paused]);
 
   if (!game) notFound();
 
   const endGame = () => {
     setOver(true);
-    if (isAsteroids) setPaused(true);
+    if (entry) setPaused(true);
   };
   const restart = () => {
     setScore(0);
+    setLivesState(3);
+    setLevel(1);
     setPaused(false);
     setOver(false);
     setSaved(false);
     setSaveError(null);
-    asteroidsRef.current?.restart();
+    gameRef.current?.restart();
   };
 
   const handleSave = async () => {
@@ -93,7 +165,7 @@ export default function GamePlayerPage({
           </div>
           <div className="hud-stat level">
             <div className="l">Nivel</div>
-            <div className="v">{String(level).padStart(2, "0")}</div>
+            <div className="v">{String(displayLevel).padStart(2, "0")}</div>
           </div>
         </div>
         <div className="hud-actions">
@@ -111,13 +183,13 @@ export default function GamePlayerPage({
 
       <div className="crt">
         <div className="crt-screen">
-          {isAsteroids ? (
-            <AsteroidsGame
-              ref={asteroidsRef}
+          {entry ? (
+            <entry.Component
+              ref={gameRef}
               paused={paused}
               onScoreChange={setScore}
-              onLivesChange={setLives}
-              onLevelChange={setAsteroidsLevel}
+              onLevelChange={setLevel}
+              onLivesChange={setLivesState}
               onGameOver={() => setOver(true)}
             />
           ) : (
