@@ -16,6 +16,7 @@ import TetrisGame, {
 import ArkanoidGame, {
   type ArkanoidGameHandle,
 } from "@/components/games/ArkanoidGame";
+import SnakeGame, { type SnakeGameHandle } from "@/components/games/SnakeGame";
 
 type GameHandle = { restart: () => void };
 
@@ -71,6 +72,20 @@ const ArkanoidEntry = forwardRef<GameHandle, GameComponentProps>(
   },
 );
 
+const SnakeEntry = forwardRef<GameHandle, GameComponentProps>(
+  function SnakeEntry(props, ref) {
+    return (
+      <SnakeGame
+        ref={ref as React.Ref<SnakeGameHandle>}
+        paused={props.paused}
+        onScoreChange={props.onScoreChange}
+        onLevelChange={props.onLevelChange}
+        onGameOver={props.onGameOver}
+      />
+    );
+  },
+);
+
 const GAME_COMPONENTS: Record<
   string,
   { Component: typeof AsteroidsEntry; fixedLives?: number }
@@ -78,6 +93,7 @@ const GAME_COMPONENTS: Record<
   asteroides: { Component: AsteroidsEntry },
   tetris: { Component: TetrisEntry, fixedLives: 1 },
   arkanoid: { Component: ArkanoidEntry },
+  snake: { Component: SnakeEntry, fixedLives: 1 },
 };
 
 export default function GamePlayerPage({
