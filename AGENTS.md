@@ -24,6 +24,10 @@ Use always `/frontend-design` skill to design UI.
 
 Use the `add-game` skill (`.claude/skills/add-game/`) to scaffold a new playable game end-to-end (catalog entry, cover art, ported engine component, play-page wiring, Supabase seed migration) via the spec-driven workflow — never add a game by hand.
 
+# Agents
+
+Use the `game-planner` agent (`.claude/agents/game-planner.md`) to decide which game should be added next — it analyzes the current catalog (`lib/games.ts`) and what's actually implemented (`references/implemented-games.md`) against category/mechanic gaps, and remembers its past suggestions in `references/game-suggestions.md` so it doesn't repeat itself. It only recommends; hand accepted suggestions to the `add-game` skill to implement.
+
 ## Architecture
 
 - **App Router** under `app/`: `app/page.tsx` (home), `app/games/page.tsx` (catalog), `app/games/[id]/page.tsx` (game detail + `leaderboard-preview.tsx`), `app/games/[id]/play/page.tsx` (play page — per-`id` registry wiring real game components), `app/salon/page.tsx` (global leaderboard), `app/auth/page.tsx`, `app/about/page.tsx`, and API routes under `app/api/` (`contact`, `supabase-health`). Path alias `@/*` maps to the repo root (`tsconfig.json`).
